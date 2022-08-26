@@ -1,3 +1,4 @@
+from tabnanny import check
 import pygame, sys
 import numpy as np
 
@@ -62,10 +63,79 @@ def is_board_full():
     
     return True
 
+def check_win(player):
+    # vertical win check
+    for col in range(BOARD_Cols):
+        if board[0][col] == player and board[1][col] == player and board[2][col] == player:
+            draw_vertical_winning_line(col, player)
+            return True
 
+    # horizontal win check
+    for row in range(BOARD_Rows):
+        if board[row][0] == player and board[row][1] == player and board[row][2] == player:
+            draw_horizontal_winning_line(row, player)
+            return True
+
+    # ascending diagonal win check
+    if board[2][0] == player and board[1][1] == player and board[0][2] == player:
+        draw_asc_diagonal(player)
+        return True
+
+    # descending diagonal win check
+    if board[0][0] == player and board[1][1] == player and board[2][2] == player:
+        draw_desc_diagonal(player)
+        return True
+
+    return False
+
+
+def draw_vertical_winning_line(col, player):
+    posX = col * 200 + 100
+
+    if player  == 1:
+        color = Circle_Color
+    elif player == 2:
+        color == Cross_Color
+
+    pygame.draw.line(window, color, (posX, 15), (posX, HEIGHT - 15), 15)
+
+def draw_horizontal_winning_line(row, player):
+    posY = row * 200 + 100
+
+    if player == 1:
+        color == Circle_Color
+    elif player == 2:
+        color = Cross_Color
+
+    pygame.draw.line(window, color, (15, posY), (WIDTH - 15, posY), 15)
+
+def draw_asc_diagonal(player):
+    if player == 1:
+        color == Circle_Color
+    elif player == 2:
+        color = Cross_Color
+
+    pygame.draw.line(window, color, (15, HEIGHT - 15), (WIDTH - 15, 15), 15)
+
+def draw_desc_diagonal(player):
+    if player == 1:
+        color == Circle_Color
+    elif player == 2:
+        color = Cross_Color
+
+    pygame.draw.line(window, color, (15, 15), (WIDTH - 15, HEIGHT - 15), 15)
+
+def restart():  
+    window.fill(BG_Color)
+    draw_lines()
+    player = 1
+    for row in range(BOARD_Rows):
+        for col in range(BOARD_Cols):
+            board[row][col] = 0
 draw_lines()
 
 player = 1
+game_over = False
 
 # Main Loop
 while True:
@@ -73,7 +143,7 @@ while True:
         if event.type == pygame.QUIT: 
             sys.exit()
 
-        if event.type == pygame.MOUSEBUTTONDOWN:
+        if event.type == pygame.MOUSEBUTTONDOWN and not game_over:
 
             mouseX = event.pos[0] # x-coordinate
             mouseY = event.pos[1] # y-coordinate
@@ -84,14 +154,21 @@ while True:
             if available_square(clicked_row, clicked_col):
                 if player == 1:
                     mark_square(clicked_row, clicked_col, 1)
+                    if check_win( player ):
+                        game_over = True
                     player = 2
+
                 elif player == 2:
                     mark_square(clicked_row, clicked_col, 2)
+                    if check_win( player ):
+                        game_over = True
                     player = 1
                 
                 draw_sprites()
-                
-            
 
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_q: 
+                game_over = False
+                restart()    
 
     pygame.display.update()
